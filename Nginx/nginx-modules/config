@@ -1,0 +1,29 @@
+ngx_addon_name="ngx_argenta_module"
+
+HTTP_MODULES="$HTTP_MODULES                                 \
+                ngx_argenta_api_module \
+                "
+STREAM_MODULES="$STREAM_MODULES                         \
+                ngx_argenta_stream_module                         \
+                ngx_argenta_log_module                    \
+                ngx_argenta_stream_peer_module                    \
+                "
+
+NGX_ADDON_DEPS="$NGX_ADDON_DEPS                             \
+                $ngx_addon_dir/ngx_argenta_stream.h               \
+                $ngx_addon_dir/ngx_argenta_log.h               \
+                $ngx_addon_dir/ngx_argenta.h               \
+                $ngx_addon_dir/ngx_argenta_stream_peer.h          \
+                "
+
+
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS                             \
+                $ngx_addon_dir/ngx_argenta_api_module.c                   \
+                $ngx_addon_dir/ngx_argenta_stream.c                   \
+                $ngx_addon_dir/ngx_argenta_log.c                   \
+                $ngx_addon_dir/ngx_argenta_stream_peer.c                   \
+                "
+CORE_LIBS="$CORE_LIBS -lrt -L../../Build/CMake -largenta"
+
+CFLAGS="$CFLAGS -I$ngx_addon_dir" 
+

@@ -1,0 +1,61 @@
+{
+    "ProtocolRegister": {
+        "serverIp": "const char*",
+        "internalIp": "const char*",
+        "ccode": "const char*",
+        "pcode": "const char*",
+        "icode": "const char*",
+        "capability": "int"
+    },
+    "ProtocolRegisterResponse": {
+        "serverIp": "const char*",
+        "isDisabled": "int"
+    },
+    "ProtocolHeartbeat": {
+        "serverIp": "const char*",
+        "capability": "int"
+    },
+    "ProtocolUniqueId": {
+        "liveId": "const char*",
+        "confId": "const char*",
+        "appId": "const char*",
+        "userName": "const char*",
+        "userId": "const char*",
+        "rtmp":"bool",
+        "storage":"bool"
+    },
+    "ProtocolInit": {
+        "appId": "const char*",
+        "confId": "const char*",
+        "userId": "const char*",
+        "relayServer": [{
+            "pcode":"const char*",
+            "icode":"const char*",
+            "ccode":"const char*",
+            "address":"const char*"
+        }]
+    },
+    "ProtocolConvert": {
+        "liveId": "const char*",
+        "confId": "const char*",
+        "appId": "const char*",
+        "userName": "const char*",
+        "userId": "const char*",
+        "messageType": "int",
+        "publishServerIp":"const char*",
+        "distributedServerIp":"const char*",
+        "distributedInternalIp": "const char*",
+        "isPublishToAll":"bool",
+        "publishUrl":[
+            "const char*"
+        ]
+    },
+    "ProtocolError":{
+        "message":"char*",
+        "args":{
+            "liveId":"char*",
+            "appId":"char*",
+            "confId":"char*"
+        }
+    }
+}
