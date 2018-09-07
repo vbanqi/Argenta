@@ -5,6 +5,7 @@ APP_PATH=$(TOP)/Src
 
 ifeq "$(MAKECMDGOALS)" "rpm"
 WORK_PATH=/usr/local/argenta
+LIB_PATH=/usr/local/lib64
 RPMDIR:=$(TOP)/rpmbuild
 ARGENTA_CONF:=$(TOP)/Conf/argenta.conf
 else
@@ -34,10 +35,9 @@ nginx:$(NGX_TEST_CONFIG) app
 	make -C $(NGINX_PATH)
 
 rpm:nginx install_rpm
-	chmod +x $(SCRIPT_FILES_PATH)/*
 	cp $(ARGENTA_LIB) $(RPMDIR)$(LIB_PATH)/
-	cp $(TOP)/Conf/argenta.conf $(RPMDIR)$(WORKSPACE)/conf/argenta.conf
-	cp $(NGINX_PATH)/objs/nginx $(RPMDIR)$(WORKSPACE)/sbin/argenta
+	cp $(TOP)/Conf/argenta.conf $(RPMDIR)$(WORK_PATH)/conf/argenta.conf
+	cp $(NGINX_PATH)/objs/nginx $(RPMDIR)$(WORK_PATH)/sbin/argenta
 
 workspace:nginx
 	make -C $(NGINX_PATH) install
@@ -46,6 +46,8 @@ workspace:nginx
 	ln -sf $(TOP)/Conf/argenta.conf $(TOP)/workspace/conf/argenta.conf
 
 distclean:clean
+	make -C $(NGINX_PATH) clean
+	@rm -rf $(RPMDIR)
 	@rm -rf Build/CMake/CMakeFiles Build/CMake/cmake_install.cmake Build/CMake/CMakeCache.txt Build/CMake/Makefile
 
 clean:
@@ -56,47 +58,47 @@ clean:
 
 install_rpm: nginx
 	test -d '$(RPMDIR)' || mkdir -p '$(RPMDIR)'
-	test -d '$(RPMDIR)$(WORKSPACE)/sbin' \
-		|| mkdir -p '$(RPMDIR)$(WORKSPACE)/sbin'
-	test ! -f '$(RPMDIR)$(WORKSPACE)/sbin/nginx' \
-		|| mv '$(RPMDIR)$(WORKSPACE)/sbin/nginx' \
-			'$(RPMDIR)$(WORKSPACE)/sbin/nginx.old'
-	cp $(NGINX_PATH)/objs/nginx '$(RPMDIR)$(WORKSPACE)/sbin/nginx'
-	test -d '$(RPMDIR)$(WORKSPACE)/conf' \
-		|| mkdir -p '$(RPMDIR)$(WORKSPACE)/conf'
-	cp $(NGINX_PATH)/conf/koi-win '$(RPMDIR)$(WORKSPACE)/conf'
-	cp $(NGINX_PATH)/conf/koi-utf '$(RPMDIR)$(WORKSPACE)/conf'
-	cp $(NGINX_PATH)/conf/win-utf '$(RPMDIR)$(WORKSPACE)/conf'
-	test -f '$(RPMDIR)$(WORKSPACE)/conf/mime.types' \
-		|| cp $(NGINX_PATH)/conf/mime.types '$(RPMDIR)$(WORKSPACE)/conf'
-	cp $(NGINX_PATH)/conf/mime.types '$(RPMDIR)$(WORKSPACE)/conf/mime.types.default'
-	test -f '$(RPMDIR)$(WORKSPACE)/conf/fastcgi_params' \
-		|| cp $(NGINX_PATH)/conf/fastcgi_params '$(RPMDIR)$(WORKSPACE)/conf'
+	test -d '$(RPMDIR)$(WORK_PATH)/sbin' \
+		|| mkdir -p '$(RPMDIR)$(WORK_PATH)/sbin'
+	test ! -f '$(RPMDIR)$(WORK_PATH)/sbin/nginx' \
+		|| mv '$(RPMDIR)$(WORK_PATH)/sbin/nginx' \
+			'$(RPMDIR)$(WORK_PATH)/sbin/nginx.old'
+	cp $(NGINX_PATH)/objs/nginx '$(RPMDIR)$(WORK_PATH)/sbin/nginx'
+	test -d '$(RPMDIR)$(WORK_PATH)/conf' \
+		|| mkdir -p '$(RPMDIR)$(WORK_PATH)/conf'
+	cp $(NGINX_PATH)/conf/koi-win '$(RPMDIR)$(WORK_PATH)/conf'
+	cp $(NGINX_PATH)/conf/koi-utf '$(RPMDIR)$(WORK_PATH)/conf'
+	cp $(NGINX_PATH)/conf/win-utf '$(RPMDIR)$(WORK_PATH)/conf'
+	test -f '$(RPMDIR)$(WORK_PATH)/conf/mime.types' \
+		|| cp $(NGINX_PATH)/conf/mime.types '$(RPMDIR)$(WORK_PATH)/conf'
+	cp $(NGINX_PATH)/conf/mime.types '$(RPMDIR)$(WORK_PATH)/conf/mime.types.default'
+	test -f '$(RPMDIR)$(WORK_PATH)/conf/fastcgi_params' \
+		|| cp $(NGINX_PATH)/conf/fastcgi_params '$(RPMDIR)$(WORK_PATH)/conf'
 	cp $(NGINX_PATH)/conf/fastcgi_params \
-		'$(RPMDIR)$(WORKSPACE)/conf/fastcgi_params.default'
-	test -f '$(RPMDIR)$(WORKSPACE)/conf/fastcgi.conf' \
-		|| cp $(NGINX_PATH)/conf/fastcgi.conf '$(RPMDIR)$(WORKSPACE)/conf'
-	cp $(NGINX_PATH)/conf/fastcgi.conf '$(RPMDIR)$(WORKSPACE)/conf/fastcgi.conf.default'
-	test -f '$(RPMDIR)$(WORKSPACE)/conf/uwsgi_params' \
-		|| cp $(NGINX_PATH)/conf/uwsgi_params '$(RPMDIR)$(WORKSPACE)/conf'
+		'$(RPMDIR)$(WORK_PATH)/conf/fastcgi_params.default'
+	test -f '$(RPMDIR)$(WORK_PATH)/conf/fastcgi.conf' \
+		|| cp $(NGINX_PATH)/conf/fastcgi.conf '$(RPMDIR)$(WORK_PATH)/conf'
+	cp $(NGINX_PATH)/conf/fastcgi.conf '$(RPMDIR)$(WORK_PATH)/conf/fastcgi.conf.default'
+	test -f '$(RPMDIR)$(WORK_PATH)/conf/uwsgi_params' \
+		|| cp $(NGINX_PATH)/conf/uwsgi_params '$(RPMDIR)$(WORK_PATH)/conf'
 	cp $(NGINX_PATH)/conf/uwsgi_params \
-		'$(RPMDIR)$(WORKSPACE)/conf/uwsgi_params.default'
-	test -f '$(RPMDIR)$(WORKSPACE)/conf/scgi_params' \
-		|| cp $(NGINX_PATH)/conf/scgi_params '$(RPMDIR)$(WORKSPACE)/conf'
+		'$(RPMDIR)$(WORK_PATH)/conf/uwsgi_params.default'
+	test -f '$(RPMDIR)$(WORK_PATH)/conf/scgi_params' \
+		|| cp $(NGINX_PATH)/conf/scgi_params '$(RPMDIR)$(WORK_PATH)/conf'
 	cp $(NGINX_PATH)/conf/scgi_params \
-		'$(RPMDIR)$(WORKSPACE)/conf/scgi_params.default'
-	test -f '$(RPMDIR)$(WORKSPACE)/conf/nginx.conf' \
-		|| cp $(NGINX_PATH)/conf/nginx.conf '$(RPMDIR)$(WORKSPACE)/conf/nginx.conf'
-	cp $(NGINX_PATH)/conf/nginx.conf '$(RPMDIR)$(WORKSPACE)/conf/nginx.conf.default'
-	cp $(ARGENTA_CONF) '$(RPMDIR)$(WORKSPACE)/conf/argenta.conf'
-	test -d '$(RPMDIR)$(WORKSPACE)/logs' \
-		|| mkdir -p '$(RPMDIR)$(WORKSPACE)/logs'
-	test -d '$(RPMDIR)$(WORKSPACE)/logs' \
-		|| mkdir -p '$(RPMDIR)$(WORKSPACE)/logs'
-	test -d '$(RPMDIR)$(WORKSPACE)/html' \
-		|| cp -R $(NGINX_PATH)/html '$(RPMDIR)$(WORKSPACE)'
-	test -d '$(RPMDIR)$(WORKSPACE)/logs' \
-		|| mkdir -p '$(RPMDIR)$(WORKSPACE)/logs'
+		'$(RPMDIR)$(WORK_PATH)/conf/scgi_params.default'
+	test -f '$(RPMDIR)$(WORK_PATH)/conf/nginx.conf' \
+		|| cp $(NGINX_PATH)/conf/nginx.conf '$(RPMDIR)$(WORK_PATH)/conf/nginx.conf'
+	cp $(NGINX_PATH)/conf/nginx.conf '$(RPMDIR)$(WORK_PATH)/conf/nginx.conf.default'
+	cp $(ARGENTA_CONF) '$(RPMDIR)$(WORK_PATH)/conf/argenta.conf'
+	test -d '$(RPMDIR)$(WORK_PATH)/logs' \
+		|| mkdir -p '$(RPMDIR)$(WORK_PATH)/logs'
+	test -d '$(RPMDIR)$(WORK_PATH)/logs' \
+		|| mkdir -p '$(RPMDIR)$(WORK_PATH)/logs'
+	test -d '$(RPMDIR)$(WORK_PATH)/html' \
+		|| cp -R $(NGINX_PATH)/html '$(RPMDIR)$(WORK_PATH)'
+	test -d '$(RPMDIR)$(WORK_PATH)/logs' \
+		|| mkdir -p '$(RPMDIR)$(WORK_PATH)/logs'
 	test -d '$(RPMDIR)$(LIB_PATH)' \
 		|| mkdir -p '$(RPMDIR)$(LIB_PATH)'
 	#test -d '$(SCRIPT_PATH)' \

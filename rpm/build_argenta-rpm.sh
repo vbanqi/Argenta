@@ -52,13 +52,13 @@ BUILD_START=$(date +%s)
 #git clone $HOLA_GIT_PATH 
 #echo "############### git checkout success ###################"
 if [ -n "$POS_PREFIX" ]; then
-    sed -i "/INSTALL_PATH:=/c\INSTALL_PATH:=$POS_PREFIX" ../Makefile.rpm
+    sed -i "/WORK_PATH:=/c\WORK_PATH:=$POS_PREFIX" ../Makefile
 fi
 if [ -n "$POS_LIB" ]; then
-    sed -i "/LIB_PATH:=/c\LIB_PATH:=$POS_LIB" ../Makefile.rpm
+    sed -i "/LIB_PATH:=/c\LIB_PATH:=$POS_LIB" ../Makefile
 fi
 
-cd ..;  make rpm; 
+cd ..; make distclean; make rpm; 
 RESULT=$?
 echo "The result of build is "${RESULT}
 if [ "${RESULT}" != "0" ];
