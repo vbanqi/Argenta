@@ -17,8 +17,6 @@ endif ()
 set(nginx_dir "../Nginx/nginx-1.10.3")
 set(nginx_modules "../Nginx/nginx-modules")
 
-message(status, "current dir:${CMAKE_CURRENT_SOURCE_DIR}")
-
 file(GLOB_RECURSE argentaCxxSource "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 MACRO(SUBDIRLIST result curdir)
@@ -35,10 +33,6 @@ ENDMACRO()
 SUBDIRLIST(argentaDirs ${CMAKE_CURRENT_SOURCE_DIR})
 
 SUBDIRLIST(nginxDirs ${CMAKE_CURRENT_SOURCE_DIR}/${nginx_dir}/src)
-
-message(status, "file list:${argentaCxxSource}")
-message(status, "dir list:${argentaDirs}")
-message(status, "nginx list:${nginxDirs}")
 
 include_directories(${argentaDirs}
                     ${nginxDirs}
