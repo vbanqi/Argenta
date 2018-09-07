@@ -2,7 +2,18 @@ cmake_minimum_required(VERSION 2.8.11)
 
 SET(CMAKE_CXX_COMPILER g++)
 
-set(CMAKE_CXX_COMPILE_FEATURES " -Wall -Werror -std=c++11")
+if (CMAKE_VERSION VERSION_LESS "3.1")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+    else ()
+        set(CMAKE_CXX_COMPILE_FEATURES " -Wall -Werror -std=c++11")
+    endif ()
+else ()
+    set (CMAKE_CXX_STANDARD 11)
+    add_definitions(-Wall)
+    add_definitions(-Werror)
+endif ()
+
 set(nginx_dir "../Nginx/nginx-1.10.3")
 set(nginx_modules "../Nginx/nginx-modules")
 
@@ -35,4 +46,3 @@ include_directories(${argentaDirs}
                     ${nginx_dir}/objs)
 
 add_library(argenta SHARED ${argentaCxxSource})
-
