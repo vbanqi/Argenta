@@ -46,12 +46,10 @@ workspace:nginx
 	ln -sf $(TOP)/Conf/argenta.conf $(TOP)/workspace/conf/argenta.conf
 
 distclean:clean
-	make -C $(NGINX_PATH) clean
-	@rm -rf $(RPMDIR)
 	@rm -rf Build/CMake/CMakeFiles Build/CMake/cmake_install.cmake Build/CMake/CMakeCache.txt Build/CMake/Makefile
 
 clean:
-	make -C $(NGINX_PATH) clean
+	-make -C $(NGINX_PATH) clean
 	make -C Build/CMake clean
 	@rm -rf $(WORK_PATH)
 	@rm -rf $(RPMDIR)
