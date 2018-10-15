@@ -192,6 +192,7 @@ void ngx_stream_argenta_handler(ngx_stream_session_t *s)
 
     ss->sockaddr = c->sockaddr;
     ss->socklen = c->socklen;
+    ss->peer_name = &c->addr_text;
 
     ss->local_sockaddr = c->local_sockaddr;
     ss->local_socklen = c->local_socklen;

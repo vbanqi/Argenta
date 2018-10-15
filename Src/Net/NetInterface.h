@@ -28,6 +28,7 @@ public:
     ngx_int_t AddHttpCleanUp(ngx_http_request_t *r, IRequestCleanUp *cleanup);
 
     void OnHttpResponse(ngx_http_request_t *r, ngx_int_t ret, ngx_chain_t *ch, size_t len);
+    void OnHttpStaticResponse(ngx_http_request_t *r);
 }; // class NetInterface
 
 #define SNet Singleton<NetInterface>::GetInstance()

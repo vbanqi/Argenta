@@ -57,7 +57,7 @@ ngx_int_t NetInterface::CreateConnection(ngx_argenta_stream_session_t *session)
         NetSession *s = new(ch)NetSession(session);
         session->sess = s;
         session->iconn = Singleton<NetFactory>::GetInstance()->CreateConnection(s);
-        if (ConnectionWillStart(session) == NGX_ERROR) {
+        if (ConnectionWillStart(session, s) == NGX_ERROR) {
             return NGX_ERROR;
         }
     }
@@ -109,8 +109,15 @@ void NetInterface::OnHttpResponse(ngx_http_request_t *r, ngx_int_t ret, ngx_chai
     r->headers_out.status = ret;
     r->headers_out.content_length_n = len;
     r->headers_out.content_type = ngx_string("application/json");
+    r->headers_out.content_type_len = r->headers_out.content_type.len;
     
     argenta_app_core_api_response(r, chain);
+}
+void NetInterface::OnHttpStaticResponse(ngx_http_request_t *r)
+{
+    r->content_handler = NULL;
+    r->write_event_handler = ngx_http_core_run_phases;
+    ngx_http_core_run_phases(r);
 }
 } // namespace argenta
 
