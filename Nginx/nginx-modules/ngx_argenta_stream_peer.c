@@ -280,9 +280,6 @@ ngx_argenta_connection_peer(const ngx_str_t *url, const ngx_str_t *bind, void *i
     s->pool = pool;
     s->log = ngx_cycle->log;
     s->iconn = iconn;
-    if (argenta_start_connection(s) == NGX_ERROR) {
-        goto create_fail;
-    }
 
     u = ngx_argenta_parse_addr(pool, url); 
     if (u == NULL) {
@@ -318,15 +315,15 @@ ngx_argenta_connection_peer(const ngx_str_t *url, const ngx_str_t *bind, void *i
         goto create_fail;
     }
 
-    struct sockaddr *sin = ngx_pcalloc(pool, sizeof(struct sockaddr_in));
-    if (!sin) {
-        ngx_log_error(NGX_LOG_INFO, ngx_cycle->log, 0, "alloc sockaddr_in error");
+    s->type = type;
+    s->role = CLIENT;
+    s->sockaddr = u->addrs->sockaddr;
+    s->socklen = u->addrs->socklen;
+    s->peer_name = &u->addrs->name;
+
+    if (argenta_start_connection(s) == NGX_ERROR) {
         goto create_fail;
     }
-
-    s->type = SOCK_DGRAM;
-    s->sockaddr = sin;
-    s->socklen = sizeof(struct sockaddr_in);
 
     s->send_buf->last_buf = 1;
     s->send_buf->last_in_chain = 1;

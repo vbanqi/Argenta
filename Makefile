@@ -8,6 +8,7 @@ WORK_PATH=/usr/local/argenta
 LIB_PATH=/usr/local/lib64
 RPMDIR:=$(TOP)/rpmbuild
 ARGENTA_CONF:=$(TOP)/Conf/argenta.conf
+ARGENTA_SCRIPT:=$(TOP)/script
 else
 WORK_PATH=$(TOP)/workspace
 endif
@@ -16,7 +17,7 @@ NGINX_PATH=$(TOP)/Nginx/nginx-1.10.3
 NGINX_MODULE=nginx-module
 
 NGX_TEST_CONFIG:=$(NGINX_PATH)/objs/ngx_auto_headers.h
-.PHONY: all rpm nginx app workspace
+.PHONY: all rpm nginx app distclean clean workspace
 	
 
 all: workspace
@@ -46,13 +47,15 @@ workspace:nginx
 	ln -sf $(TOP)/Conf/argenta.conf $(TOP)/workspace/conf/argenta.conf
 
 distclean:clean
-	@rm -rf Build/CMake/CMakeFiles Build/CMake/cmake_install.cmake Build/CMake/CMakeCache.txt Build/CMake/Makefile
+	-rm -rf Build/CMake/CMakeFiles Build/CMake/cmake_install.cmake Build/CMake/CMakeCache.txt Build/CMake/Makefile
+	-rm -rf Build/jsonobj
+	-rm -rf Src/Model/Model*
 
 clean:
 	-make -C $(NGINX_PATH) clean
-	make -C Build/CMake clean
-	@rm -rf $(WORK_PATH)
-	@rm -rf $(RPMDIR)
+	-make -C Build/CMake clean
+	rm -rf $(WORK_PATH)
+	rm -rf $(RPMDIR)
 
 install_rpm: nginx
 	test -d '$(RPMDIR)' || mkdir -p '$(RPMDIR)'
@@ -91,8 +94,9 @@ install_rpm: nginx
 	cp $(ARGENTA_CONF) '$(RPMDIR)$(WORK_PATH)/conf/argenta.conf'
 	test -d '$(RPMDIR)$(WORK_PATH)/logs' \
 		|| mkdir -p '$(RPMDIR)$(WORK_PATH)/logs'
-	test -d '$(RPMDIR)$(WORK_PATH)/logs' \
-		|| mkdir -p '$(RPMDIR)$(WORK_PATH)/logs'
+	test -d '$(RPMDIR)$(WORK_PATH)/scripts' \
+		|| mkdir -p '$(RPMDIR)$(WORK_PATH)/scripts'
+	cp $(ARGENTA_SCRIPT)/* '$(RPMDIR)$(WORK_PATH)/scripts'
 	test -d '$(RPMDIR)$(WORK_PATH)/html' \
 		|| cp -R $(NGINX_PATH)/html '$(RPMDIR)$(WORK_PATH)'
 	test -d '$(RPMDIR)$(WORK_PATH)/logs' \

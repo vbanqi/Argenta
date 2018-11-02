@@ -45,6 +45,7 @@ typedef struct {
     //peer addr
     struct sockaddr         *sockaddr;
     socklen_t                socklen;
+    ngx_str_t               *peer_name;
     struct sockaddr         *local_sockaddr;
     socklen_t                local_socklen;
     ngx_int_t                close:1;
