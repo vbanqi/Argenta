@@ -7,6 +7,8 @@ typedef struct argenta_log_s argenta_log_t;
 
 struct argenta_log_s {
     ngx_str_t               name;
+    ngx_str_t               fullname;
+
     ngx_uint_t              level;
     size_t                  size;
     ngx_uint_t              backup;

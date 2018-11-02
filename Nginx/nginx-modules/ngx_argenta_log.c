@@ -128,8 +128,6 @@ static char *ngx_argenta_log_block(ngx_conf_t *cf, ngx_command_t *cmd, void *con
 
     lg = pmcf->argenta_log;
     
-    argenta_log_conf = pmcf;
-
     return ngx_argenta_block(cf, lg);
 }
 
@@ -150,8 +148,6 @@ static char *ngx_argenta_ngx_log_block(ngx_conf_t *cf, ngx_command_t *cmd, void 
 
     lg = pmcf->argenta_ngx_log;
 
-    argenta_log_conf = pmcf;
-
     argsn = cf->args->nelts;
 
     value = cf->args->elts;
@@ -163,7 +159,7 @@ static char *ngx_argenta_ngx_log_block(ngx_conf_t *cf, ngx_command_t *cmd, void 
             return "is duplicate";
         }
 
-        *sp = ngx_parse_size(&value[3]);
+        *sp = ngx_parse_size(&value[1]);
         if (*sp == (size_t) NGX_ERROR) {
             return "invalid value";
         }
@@ -174,7 +170,7 @@ static char *ngx_argenta_ngx_log_block(ngx_conf_t *cf, ngx_command_t *cmd, void 
             return "is duplicate";
         }
 
-        int bk = ngx_atoi(value[4].data, value[4].len);
+        int bk = ngx_atoi(value[2].data, value[2].len);
         if (bk == NGX_ERROR) {
             return "log backup error";
         }
@@ -199,6 +195,8 @@ static char *ngx_argenta_ngx_log_block(ngx_conf_t *cf, ngx_command_t *cmd, void 
 
     lg->name.data = ngxln->data + sizeof(NGX_PREFIX) - 1;
     lg->name.len = ngxln->len - sizeof(NGX_PREFIX) + 1;
+
+    lg->fullname = *ngxln;
 
     lg->file = cf->cycle->new_log.file;
     lg->level = cf->cycle->new_log.log_level;
@@ -277,6 +275,10 @@ static char *ngx_argenta_block(ngx_conf_t *cf, argenta_log_t *lg)
         return "open log error";
     }
 
+    lg->fullname = lg->name;
+    if (ngx_conf_full_name(argenta_log_conf->cycle, &lg->fullname, 0) != NGX_OK) {
+        return "get full name fail";
+    }
     return NGX_CONF_OK;
 }
 
@@ -456,11 +458,6 @@ static ngx_int_t ngx_argenta_roll_file(argenta_log_t *lg)
         return NGX_OK;
     }
 
-    if (ngx_conf_full_name(argenta_log_conf->cycle, &lname, 0) != NGX_OK) {
-        ngx_log_stderr(0,  "the log get full name failed!");
-        return NGX_ERROR;
-    }
-
     end = ngx_cpymem(oldname, lname.data, lname.len);
     *end = 0;
 
@@ -476,7 +473,8 @@ static ngx_int_t ngx_argenta_roll_file(argenta_log_t *lg)
     *end = 0;
 
     if (ngx_rename_file(oldname, newname) != NGX_OK) {
-        ngx_log_stderr(0,  "the log rename %s to %s failed!", oldname, newname);
+        ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0,  "the log rename %s to %s failed!", oldname, newname);
+        ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0,  "the log name %V fullname %V failed!", &lg->name, &lg->fullname);
         return NGX_ERROR;
     }
 
@@ -495,11 +493,8 @@ static ngx_int_t ngx_argenta_roll_file(argenta_log_t *lg)
         hl = ngx_queue_data(q, argenta_log_node_t, queue);
         ret = ngx_delete_file(hl->filename);
         if (ret == NGX_FILE_ERROR) {
-            //assert(false);
-            /*
-             *ngx_log_error(NGX_LOG_ERR, argenta_log_conf->log, 0,
-             *        "argenta delete log fail:%s", hl->filename);
-             */
+            ngx_log_error(NGX_LOG_ERR, argenta_log_conf->log, 0,
+                    "argenta delete log fail:%s", hl->filename);
             break;
         }
         q = q->next;
@@ -522,6 +517,8 @@ ngx_argenta_log_create_main_conf(ngx_conf_t *cf)
                 "argenta conf alloc fail");
         return NULL;
     }
+    conf->cycle = cf->cycle;
+    conf->log = cf->log;
 
     conf->argenta_log = ngx_pcalloc(cf->pool, sizeof(argenta_log_t));
     if (conf->argenta_log == NULL) {
@@ -535,6 +532,8 @@ ngx_argenta_log_create_main_conf(ngx_conf_t *cf)
                 "argenta conf argenta ngx log alloc fail");
         return NULL;
     }
+
+    argenta_log_conf = conf;
     /*
      * set by ngx_pcalloc():
      *
@@ -585,5 +584,4 @@ ngx_argenta_log_init_main_conf(ngx_conf_t *cf, void *cof)
 
     return NGX_CONF_OK;
 }
-
 
