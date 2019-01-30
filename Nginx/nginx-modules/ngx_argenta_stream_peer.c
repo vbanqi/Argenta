@@ -947,23 +947,8 @@ ngx_argenta_stream_peer_finalize(ngx_argenta_stream_session_t *s, ngx_int_t rc)
         u->peer.sockaddr = NULL;
     }
 
-    if (pc) {
-        ngx_log_debug1(NGX_LOG_DEBUG_STREAM, s->log, 0,
-                       "close stream peer connection: %d", pc->fd);
-
-#if (NGX_STREAM_SSL)
-        if (pc->ssl) {
-            pc->ssl->no_wait_shutdown = 1;
-            (void) ngx_ssl_shutdown(pc);
-        }
-#endif
-
-        ngx_close_connection(pc);
-        u->peer.connection = NULL;
-    }
-
 noupstream:
-    ngx_destroy_pool(s->pool);
+    ngx_post_event(pc->read, &ngx_posted_events);
 }
 
 static void *

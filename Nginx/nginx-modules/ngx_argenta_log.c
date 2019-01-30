@@ -446,7 +446,7 @@ static ngx_int_t ngx_argenta_roll_file(argenta_log_t *lg)
     time_t          sec;
     ngx_tm_t        tm;
 
-    lname = lg->name;
+    lname = lg->fullname;
 
     if (ngx_fd_info(lg->file->fd, &finfo) == NGX_FILE_ERROR) {
         ngx_log_stderr(0,  "the log get fd:%d info failed!", lg->file->fd);
@@ -468,7 +468,7 @@ static ngx_int_t ngx_argenta_roll_file(argenta_log_t *lg)
     ngx_gmtime(sec, &tm);
 
 	end = ngx_snprintf(newname, MAXPATHLEN, "%V_%04d%02d%02d%02d%02d%02d.log" 
-                , &lname, tm.tm_year, tm.tm_mon + 1, tm.tm_mday
+                , &lname, tm.tm_year, tm.tm_mon, tm.tm_mday
                 , tm.tm_hour, tm.tm_min, tm.tm_sec);
     *end = 0;
 

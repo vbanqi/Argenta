@@ -460,8 +460,8 @@ ngx_argenta_stream_finalize(ngx_connection_t *c, ngx_int_t rc)
 
     s->close = 1;
 
-    ngx_stream_close_connection(c);
-    //ngx_post_event(c->read, &ngx_posted_events);
+    //ngx_stream_close_connection(c);
+    ngx_post_event(c->read, &ngx_posted_events);
 }
 
 
