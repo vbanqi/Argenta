@@ -44,7 +44,7 @@ typedef struct {
 
 #define ngx_argenta_stream_peer_get_conf(module)   (ngx_cycle)->conf_ctx[module.index]
 
-extern void ngx_argenta_connection_peer(const ngx_str_t *url, const ngx_str_t *bind, void *data, int type);
+extern void ngx_argenta_connection_peer(const ngx_str_t *url, const ngx_str_t *bind, void *data, int type, int ssl);
 
 extern void ngx_argenta_stream_peer_finalize(ngx_argenta_stream_session_t *s, ngx_int_t rc);
 #endif

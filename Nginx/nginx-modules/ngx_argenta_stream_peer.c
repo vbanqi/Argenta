@@ -21,7 +21,7 @@ extern void argenta_app_core_udp_send(ngx_event_t *wev);
 
 void ngx_argenta_stream_peer_finalize(ngx_argenta_stream_session_t *s, ngx_int_t rc);
 
-void ngx_argenta_connection_peer(const ngx_str_t *url, const ngx_str_t *bind, void *iconn, int type);
+void ngx_argenta_connection_peer(const ngx_str_t *url, const ngx_str_t *bind, void *iconn, int type, int ssl);
 
 static char *ngx_argenta_stream_peer_init(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 
@@ -253,7 +253,7 @@ ngx_argenta_stream_peer_init(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 }
 
 void 
-ngx_argenta_connection_peer(const ngx_str_t *url, const ngx_str_t *bind, void *iconn, int type)
+ngx_argenta_connection_peer(const ngx_str_t *url, const ngx_str_t *bind, void *iconn, int type, int ssl)
 {
     ngx_argenta_stream_peer_srv_conf_t     *spscf;
     ngx_pool_t                          *pool;
@@ -280,6 +280,10 @@ ngx_argenta_connection_peer(const ngx_str_t *url, const ngx_str_t *bind, void *i
     s->pool = pool;
     s->log = ngx_cycle->log;
     s->iconn = iconn;
+    s->ssl = ssl;
+    if (argenta_start_connection(s) == NGX_ERROR) {
+        goto create_fail;
+    }
 
     u = ngx_argenta_parse_addr(pool, url); 
     if (u == NULL) {
@@ -315,15 +319,18 @@ ngx_argenta_connection_peer(const ngx_str_t *url, const ngx_str_t *bind, void *i
         goto create_fail;
     }
 
+    struct sockaddr *sin = ngx_pcalloc(pool, sizeof(struct sockaddr_in));
+    if (!sin) {
+        ngx_log_error(NGX_LOG_INFO, ngx_cycle->log, 0, "alloc sockaddr_in error");
+        goto create_fail;
+    }
+
     s->type = type;
     s->role = CLIENT;
     s->sockaddr = u->addrs->sockaddr;
     s->socklen = u->addrs->socklen;
     s->peer_name = &u->addrs->name;
 
-    if (argenta_start_connection(s) == NGX_ERROR) {
-        goto create_fail;
-    }
 
     s->send_buf->last_buf = 1;
     s->send_buf->last_in_chain = 1;
@@ -496,7 +503,7 @@ ngx_argenta_stream_peer_init_upstream(ngx_argenta_stream_session_t *s)
     pscf = ngx_stream_get_module_srv_conf(s, ngx_argenta_stream_peer_module);
 
 #if (NGX_STREAM_SSL)
-    if (pc->type == SOCK_STREAM && pscf->ssl && pc->ssl == NULL) {
+    if (pc->type == SOCK_STREAM && pscf->ssl && s->ssl && pc->ssl == NULL) {
         ngx_argenta_stream_peer_ssl_init_connection(s);
         return;
     }
@@ -797,6 +804,13 @@ ngx_argenta_stream_peer_connect_handler(ngx_event_t *ev)
     c = ev->data;
     s = c->data;
 
+    if (s->close) {
+        ngx_log_error(NGX_LOG_INFO, c->log, 0,
+                "denali the udp connection is closed");
+        ngx_stream_close_connection(c);
+        return;
+    }
+
     if (ev->timedout) {
         ngx_log_error(NGX_LOG_ERR, c->log, NGX_ETIMEDOUT, "upstream timed out");
         ngx_argenta_stream_peer_next_upstream(s);
@@ -923,11 +937,13 @@ ngx_argenta_stream_peer_finalize(ngx_argenta_stream_session_t *s, ngx_int_t rc)
 {
     ngx_connection_t       *pc;
     ngx_stream_upstream_t  *u;
+    ngx_pool_t             *pool;
 
     ngx_log_debug1(NGX_LOG_DEBUG_STREAM, s->log, 0,
                    "finalize stream proxy: %i", rc);
 
     s->close = 1;
+    pool = s->pool;
     u = s->upstream;
     pc = u->peer.connection;
 
@@ -948,7 +964,12 @@ ngx_argenta_stream_peer_finalize(ngx_argenta_stream_session_t *s, ngx_int_t rc)
     }
 
 noupstream:
-    ngx_post_event(pc->read, &ngx_posted_events);
+    if (pc) {
+        ngx_post_event(pc->read, &ngx_posted_events);
+    }
+    else {
+        ngx_destroy_pool(pool);
+    }
 }
 
 static void *
@@ -1147,45 +1168,4 @@ ngx_argenta_stream_peer_set_ssl(ngx_conf_t *cf, ngx_argenta_stream_peer_srv_conf
 }
 
 #endif
-/*
- *static char *
- *ngx_argenta_stream_peer_bind(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
- *{
- *    ngx_argenta_stream_peer_srv_conf_t *pscf = conf;
- *
- *    ngx_int_t   rc;
- *    ngx_str_t  *value;
- *
- *    if (pscf->local != NGX_CONF_UNSET_PTR) {
- *        return "is duplicate";
- *    }
- *
- *    value = cf->args->elts;
- *
- *    if (ngx_strcmp(value[1].data, "off") == 0) {
- *        pscf->local = NULL;
- *        return NGX_CONF_OK;
- *    }
- *
- *    pscf->local = ngx_palloc(cf->pool, sizeof(ngx_addr_t));
- *    if (pscf->local == NULL) {
- *        return NGX_CONF_ERROR;
- *    }
- *
- *    rc = ngx_parse_addr(cf->pool, pscf->local, value[1].data, value[1].len);
- *
- *    switch (rc) {
- *    case NGX_OK:
- *        pscf->local->name = value[1];
- *        return NGX_CONF_OK;
- *
- *    case NGX_DECLINED:
- *        ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
- *                           "invalid address \"%V\"", &value[1]);
- *        [> fall through <]
- *
- *    default:
- *        return NGX_CONF_ERROR;
- *    }
- *}
- */
+

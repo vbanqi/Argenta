@@ -22,12 +22,17 @@ NetInterface::~NetInterface()
 
 void NetInterface::CreateTcpConnectionPeer(const ngx_str_t *url, IConnection *conn, const ngx_str_t *bind)
 {
-    ngx_argenta_connection_peer(url, bind, conn, SOCK_STREAM);
+    ngx_argenta_connection_peer(url, bind, conn, SOCK_STREAM, 0);
+}
+
+void NetInterface::CreateTcpConnectionPeerSsl(const ngx_str_t *url, IConnection *conn, const ngx_str_t *bind)
+{
+    ngx_argenta_connection_peer(url, bind, conn, SOCK_STREAM, 1);
 }
 
 void NetInterface::CreateUdpConnectionPeer(const ngx_str_t *url, IConnection *conn, const ngx_str_t *bind)
 {
-    ngx_argenta_connection_peer(url, bind, conn, SOCK_DGRAM);
+    ngx_argenta_connection_peer(url, bind, conn, SOCK_DGRAM, 0);
 }
 
 void NetInterface::DestoryConnection(NetSession *sess)

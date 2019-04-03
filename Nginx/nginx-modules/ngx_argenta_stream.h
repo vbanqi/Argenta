@@ -50,6 +50,7 @@ typedef struct {
     socklen_t                local_socklen;
     ngx_int_t                close:1;
     ngx_int_t                manual:1;
+    ngx_int_t                ssl:1;
 } ngx_argenta_stream_session_t;
 
 typedef struct argenta_addrs_s argenta_addrs_t;

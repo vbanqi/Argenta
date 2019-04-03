@@ -20,6 +20,7 @@ public:
     void OnDestoryConnection(ngx_argenta_stream_session_t *session);
     
     void CreateTcpConnectionPeer(const ngx_str_t *url, IConnection *obj, const ngx_str_t *bind = nullptr);
+    void CreateTcpConnectionPeerSsl(const ngx_str_t *url, IConnection *conn, const ngx_str_t *bind = nullptr);
     void CreateUdpConnectionPeer(const ngx_str_t *url, IConnection *obj, const ngx_str_t *bind = nullptr);
     //void CreateUdpConnection(const ngx_str_t *url, IConnection *obj);
 
